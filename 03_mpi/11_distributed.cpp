@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
 	}
 
 	MPI_Win_create(
-			ibody,
+			jbody,
 			N/size*sizeof(Body),
 			sizeof(Body),
 			MPI_INFO_NULL,
@@ -44,10 +44,9 @@ int main(int argc, char** argv) {
 	for(int irank=0; irank<size; irank++) {
 //		MPI_Send(jbody, N/size, MPI_BODY, send_to, 0, MPI_COMM_WORLD);
 //		MPI_Recv(jbody, N/size, MPI_BODY, recv_from, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-		memcpy(temp, jbody, N/size*sizeof(Body));
 		MPI_Win_fence(0, win);
 		MPI_Put(
-				temp,
+				jbody,
 				N/size,
 				MPI_BODY,
 				send_to,
@@ -57,7 +56,6 @@ int main(int argc, char** argv) {
 				win
 		);
 		MPI_Win_fence(0, win);
-		memcpy(jbody, temp, N/size*sizeof(Body));
 
 
 	for(int i=0; i<N/size; i++) {
