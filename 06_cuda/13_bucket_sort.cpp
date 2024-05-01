@@ -2,6 +2,10 @@
 #include <cstdlib>
 #include <vector>
 
+__global__ void bucket_sort() {
+	int i = blo
+}
+
 int main() {
   int n = 50;
   int range = 5;
