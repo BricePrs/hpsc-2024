@@ -1,20 +1,19 @@
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
-
-__global__ void bucket_sort() {
-	int i = blo
-}
+#include <iostream>
+#include <chrono>
 
 int main() {
-  int n = 50;
-  int range = 5;
+  int n = 1<<29;
+  int range = 256;
   std::vector<int> key(n);
   for (int i=0; i<n; i++) {
     key[i] = rand() % range;
-    printf("%d ",key[i]);
+    //printf("%d ",key[i]);
   }
   printf("\n");
+  auto start = std::chrono::high_resolution_clock::now(); // Start measuring time
 
   std::vector<int> bucket(range); 
   for (int i=0; i<range; i++) {
@@ -29,8 +28,15 @@ int main() {
     }
   }
 
+
+
+  auto end = std::chrono::high_resolution_clock::now(); // Stop measuring time
+
+  std::chrono::duration<double> elapsed_seconds = end - start;
+  std::cout << "Time taken: " << elapsed_seconds.count() << " seconds" << std::endl;
+
   for (int i=0; i<n; i++) {
-    printf("%d ",key[i]);
+    //printf("%d ",key[i]);
   }
   printf("\n");
 }
