@@ -5,14 +5,14 @@
 #include <chrono>
 
 void SimdSolution(float *x, float *y, float *fx, float *fy, float *m, int N) {
-	__m512 fx_vec = _mm512_load_ps(fx);
-	__m512 fy_vec = _mm512_load_ps(fy);
-	__m512 m_vec = _mm512_load_ps(m);
 
 	for(int i=0; i<N; i++) {
+
 		__m512 xi_vec = _mm512_set1_ps(x[i]);
 		__m512 yi_vec = _mm512_set1_ps(y[i]);
 		for(int j=0; j<N; j+=16) {
+			__m512 m_vec = _mm512_load_ps(&m[j]);
+
 			__m512 x_vec = _mm512_load_ps(&x[j]);
 			__m512 y_vec = _mm512_load_ps(&y[j]);
 
@@ -34,14 +34,9 @@ void SimdSolution(float *x, float *y, float *fx, float *fy, float *m, int N) {
 			__m512 temp = _mm512_mul_ps(m_vec, rn3_vec);
 			temp = _mm512_mask_blend_ps(mask, _mm512_set1_ps(0), temp);
 
-			fx_vec = _mm512_sub_ps(fx_vec, temp);
-			fy_vec = _mm512_sub_ps(fy_vec, temp);
-
-			_mm512_store_ps(fx, fx_vec);
-			_mm512_store_ps(fy, fy_vec);
+			fx[i] -= __mm512_reduce_add_ps(fx);
+			fy[i] -= __mm512_reduce_add_ps(fy);
 		}
-
-
 
 		printf("%d %g %g\n",i,fx[i],fy[i]);
 	}
