@@ -7,7 +7,6 @@
 void SimdSolution(float *x, float *y, float *fx, float *fy, float *m, int N) {
 
 	for(int i=0; i<N; i++) {
-
 		__m512 xi_vec = _mm512_set1_ps(x[i]);
 		__m512 yi_vec = _mm512_set1_ps(y[i]);
 		for(int j=0; j<N; j+=16) {
@@ -34,8 +33,14 @@ void SimdSolution(float *x, float *y, float *fx, float *fy, float *m, int N) {
 			__m512 temp = _mm512_mul_ps(m_vec, rn3_vec);
 			temp = _mm512_mask_blend_ps(mask, _mm512_set1_ps(0), temp);
 
-			fx[i] -= _mm512_reduce_add_ps(temp);
-			fy[i] -= _mm512_reduce_add_ps(temp);
+      float red_temp_x = _mm512_reduce_add_ps(_mm512_mul_ps(temp, rx_vec));
+      float red_temp_y = _mm512_reduce_add_ps(_mm512_mul_ps(temp, ry_vec));
+      if (i==0) {
+        printf("red_temps = %f\n", red_temp);
+      }
+
+			fx[i] -= red_temp_x;
+			fy[i] -= red_temp_y;
 		}
 
 		printf("%d %g %g\n",i,fx[i],fy[i]);
