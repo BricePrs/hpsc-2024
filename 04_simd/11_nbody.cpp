@@ -36,8 +36,8 @@ void SimdSolution(float *x, float *y, float *fx, float *fy, float *m, int N) {
 
 			fx[i] -= red_temp_x;
 			fy[i] -= red_temp_y;
-      printf("%d %g %g\n",i,fx[i],fy[i]);
     }
+    printf("%d %g %g\n",i,fx[i],fy[i]);
 
 	}
 }
@@ -52,12 +52,10 @@ void DefaultSolution(float *x, float *y, float *fx, float *fy, float *m, int N) 
 			fx[i] -= rx * m[j] / (r * r * r);
 			fy[i] -= ry * m[j] / (r * r * r);
 			}
-      if (j % 16 == 15) {
-        printf("%d %g %g\n",i,fx[i],fy[i]);
-      }
 
-		}
-	}
+    }
+    printf("%d %g %g\n",i,fx[i],fy[i]);
+  }
 }
 
 int main() {
