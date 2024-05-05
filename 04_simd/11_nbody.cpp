@@ -61,13 +61,13 @@ int main() {
 	const int N = 128;
 	float x[N], y[N], m[N], fx[N], fy[N];
 
-	srand(0);
+	srand48(0);
 	for(int i=0; i<N; i++) {
 		x[i] = drand48();
 		y[i] = drand48();
 		m[i] = drand48();
 		fx[i] = fy[i] = 0;
-    printf("x = %lf, x = %lf, x = %lf, x = %lf, x = %lf\n", x[i], y[i], fx[i], fy[i], m[i]);
+    printf("x = %lf, y = %lf, fx = %lf, fy = %lf, m = %lf\n", x[i], y[i], fx[i], fy[i], m[i]);
 	}
 
 
@@ -76,13 +76,13 @@ int main() {
 	auto end = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<double> elapsed = end-start;
 
-	srand(0);
+  srand48(0);
 	for(int i=0; i<N; i++) {
 		x[i] = drand48();
 		y[i] = drand48();
 		m[i] = drand48();
 		fx[i] = fy[i] = 0;
-    printf("x = %lf, x = %lf, x = %lf, x = %lf, x = %lf\n", x[i], y[i], fx[i], fy[i], m[i]);
+    printf("x = %lf, y = %lf, fx = %lf, fy = %lf, m = %lf\n", x[i], y[i], fx[i], fy[i], m[i]);
 	}
 	auto par_start = std::chrono::high_resolution_clock::now();
 	SimdSolution(x, y, fx, fy, m, N);
