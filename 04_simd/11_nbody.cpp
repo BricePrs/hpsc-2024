@@ -23,12 +23,11 @@ void SimdSolution(float *x, float *y, float *fx, float *fy, float *m, int N) {
 					_mm512_mul_ps(ry_vec, ry_vec)
 			);
 
-
 			__m512 rn_vec = _mm512_rsqrt14_ps(r_vec);
 			__m512 rn3_vec = _mm512_mul_ps(_mm512_mul_ps(rn_vec, rn_vec), rn_vec);
 
 			unsigned short mask = -1;
-			mask ^= 1 << (i-j);
+			mask ^= (1 << i) >> j;
 
 			__m512 temp = _mm512_mul_ps(m_vec, rn3_vec);
 			temp = _mm512_mask_blend_ps(mask, _mm512_set1_ps(0), temp);
