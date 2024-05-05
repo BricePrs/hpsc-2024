@@ -4,7 +4,7 @@
 #include <x86intrin.h>
 #include <chrono>
 
-void SimdSolution(float *x, float *y float *fx, float *fy, float *m) {
+void SimdSolution(float *x, float *y, float *fx, float *fy, float *m) {
 	__m512 fx_vec = _mm512_load_ps(fx);
 	__m512 fy_vec = _mm512_load_ps(fy);
 	__m512 m_vec = _mm512_load_ps(m);
