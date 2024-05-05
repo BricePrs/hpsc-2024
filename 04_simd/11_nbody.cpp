@@ -35,9 +35,6 @@ void SimdSolution(float *x, float *y, float *fx, float *fy, float *m, int N) {
 
       float red_temp_x = _mm512_reduce_add_ps(_mm512_mul_ps(temp, rx_vec));
       float red_temp_y = _mm512_reduce_add_ps(_mm512_mul_ps(temp, ry_vec));
-      if (i==0) {
-        // printf("red_temps = %f\n", red_temp);
-      }
 
 			fx[i] -= red_temp_x;
 			fy[i] -= red_temp_y;
@@ -63,7 +60,7 @@ void DefaultSolution(float *x, float *y, float *fx, float *fy, float *m, int N) 
 }
 
 int main() {
-	const int N = 16;
+	const int N = 128;
 	float x[N], y[N], m[N], fx[N], fy[N];
 
 	srand48(0);
