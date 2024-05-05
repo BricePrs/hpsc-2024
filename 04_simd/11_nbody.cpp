@@ -92,6 +92,6 @@ int main() {
 	auto par_end = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<double> par_elapsed = par_end-par_start;
 
-	printf("Default: %lf s, SIMD: %lf s", elapsed.count(), par_elapsed.count())
+	printf("Default: %lf s, SIMD: %lf s", elapsed.count(), par_elapsed.count());
 
 }
