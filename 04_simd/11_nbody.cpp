@@ -27,10 +27,9 @@ void SimdSolution(float *x, float *y, float *fx, float *fy, float *m, int N) {
 
 			unsigned short mask = -1;
 			mask ^= (1 << i) >> j;
-      //printf("mask = %i", mask);
 
 			__m512 temp = _mm512_mul_ps(m_vec, rn3_vec);
-			//temp = _mm512_mask_blend_ps(mask, _mm512_set1_ps(0), temp);
+			temp = _mm512_mask_blend_ps(mask, _mm512_set1_ps(0), temp);
 
       float red_temp_x = _mm512_reduce_add_ps(_mm512_mul_ps(temp, rx_vec));
       float red_temp_y = _mm512_reduce_add_ps(_mm512_mul_ps(temp, ry_vec));
@@ -46,11 +45,13 @@ void SimdSolution(float *x, float *y, float *fx, float *fy, float *m, int N) {
 void DefaultSolution(float *x, float *y, float *fx, float *fy, float *m, int N) {
 	for(int i=0; i<N; i++) {
 		for(int j=0; j<N; j++) {
+			if(i != j) {
 			float rx = x[i] - x[j];
 			float ry = y[i] - y[j];
 			float r = std::sqrt(rx * rx + ry * ry);
 			fx[i] -= rx * m[j] / (r * r * r);
 			fy[i] -= ry * m[j] / (r * r * r);
+			}
       if (j % 16 == 15) {
         printf("%d %g %g\n",i,fx[i],fy[i]);
       }
