@@ -11,7 +11,6 @@ void SimdSolution(float *x, float *y, float *fx, float *fy, float *m, int N) {
 		__m512 yi_vec = _mm512_set1_ps(y[i]);
 		for(int j=0; j<N; j+=16) {
 			__m512 m_vec = _mm512_load_ps(&m[j]);
-
 			__m512 x_vec = _mm512_load_ps(&x[j]);
 			__m512 y_vec = _mm512_load_ps(&y[j]);
 
@@ -28,6 +27,7 @@ void SimdSolution(float *x, float *y, float *fx, float *fy, float *m, int N) {
 
 			unsigned short mask = -1;
 			mask ^= (1 << i) >> j;
+      printf("mask = %i", mask);
 
 			__m512 temp = _mm512_mul_ps(m_vec, rn3_vec);
 			temp = _mm512_mask_blend_ps(mask, _mm512_set1_ps(0), temp);
