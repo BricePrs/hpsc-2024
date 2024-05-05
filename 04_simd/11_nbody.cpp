@@ -67,6 +67,7 @@ int main() {
 		y[i] = drand48();
 		m[i] = drand48();
 		fx[i] = fy[i] = 0;
+    printf("x = %lf, x = %lf, x = %lf, x = %lf, x = %lf\n", x[i], y[i], fx[i], fy[i], m[i]);
 	}
 
 
@@ -81,6 +82,7 @@ int main() {
 		y[i] = drand48();
 		m[i] = drand48();
 		fx[i] = fy[i] = 0;
+    printf("x = %lf, x = %lf, x = %lf, x = %lf, x = %lf\n", x[i], y[i], fx[i], fy[i], m[i]);
 	}
 	auto par_start = std::chrono::high_resolution_clock::now();
 	SimdSolution(x, y, fx, fy, m, N);
