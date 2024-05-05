@@ -26,9 +26,13 @@ __global__ void bucket_sort(int* d_bucket, int* key, int range, int n) {
   atomicAdd(d_bucket + threadIdx.x, shared_bucket[threadIdx.x]);
 }
 
-__global__ void fill_key(int* d_bucket, int* d_bucket_acc, int* key, int range, int n) {
+__global__ void fill_key(int* d_bucket, int* key) {
+  int offset = 0;
+  for (int j = 0; j < threadIdx.x; j++) {
+    offset += d_bucket[j];
+  }
+
   int c = d_bucket[threadIdx.x];
-  int offset = d_bucket_acc[threadIdx.x];
   for (; c>0; c--) {
     key[offset++] = threadIdx.x;
   }
@@ -38,7 +42,7 @@ __global__ void fill_key(int* d_bucket, int* d_bucket_acc, int* key, int range, 
 
 
 int main() {
-  int n = 1<<29;
+  int n = 1<<28;
   int range = 128;
   std::vector<int> key(n);
   for (int i=0; i<n; i++) {
@@ -52,20 +56,14 @@ int main() {
   std::vector<int> bucket(range);
 
 
-  int *d_bucket, *d_key, *d_bucket_acc;
+  int *d_bucket, *d_key;
   cudaMalloc(&d_key, key.size()*sizeof(int));
   cudaMalloc(&d_bucket, range*sizeof(int)*group_count);
-  cudaMalloc(&d_bucket_acc, range*sizeof(int)*group_count);
   cudaMemcpy(d_key, key.data(), key.size() * sizeof(int), cudaMemcpyHostToDevice);
   auto start = std::chrono::high_resolution_clock::now(); // Start measuring time
   bucket_sort<<<group_count, group_size, range*sizeof(int)>>>(d_bucket, d_key, range, n);
   cudaDeviceSynchronize();
-  cudaMemcpy(bucket.data(), d_bucket, bucket.size() * sizeof(int), cudaMemcpyDeviceToHost);
-  for (int i = 1; i < range; ++i) {
-    bucket[i] += bucket[i-1];
-  }
-  cudaMemcpy(d_bucket_acc, bucket.data(), bucket.size() * sizeof(int), cudaMemcpyHostToDevice);
-  fill_key<<<1, range>>>(d_bucket, d_bucket_acc, d_key, range, n);
+  fill_key<<<1, range>>>(d_bucket, d_key);
   cudaDeviceSynchronize();
   auto end = std::chrono::high_resolution_clock::now(); // Stop measuring time
   cudaMemcpy(key.data(), d_key, key.size() * sizeof(int), cudaMemcpyDeviceToHost);
