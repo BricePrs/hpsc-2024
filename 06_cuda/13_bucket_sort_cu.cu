@@ -13,8 +13,6 @@ __global__ void bucket_sort(int* d_bucket, int* key, int range, int n) {
   int keyIdx = blockIdx.x * blockDim.x + threadIdx.x;
 
   extern __shared__ int shared_bucket[];
-
-
   shared_bucket[threadIdx.x] = 0;
   if (blockIdx.x == 0) {
     d_bucket[threadIdx.x] = 0;
@@ -27,12 +25,8 @@ __global__ void bucket_sort(int* d_bucket, int* key, int range, int n) {
   }
   __syncthreads();
 
-
-
   atomicAdd(d_bucket + threadIdx.x, shared_bucket[threadIdx.x]);
   __syncthreads();
-
-
 
   if (blockIdx.x != 0) { return; }
 

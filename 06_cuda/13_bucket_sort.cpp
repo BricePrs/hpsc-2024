@@ -5,8 +5,8 @@
 #include <chrono>
 
 int main() {
-  int n = 1<<29;
-  int range = 256;
+  int n = 1<<28;
+  int range = 1024;
   std::vector<int> key(n);
   for (int i=0; i<n; i++) {
     key[i] = rand() % range;

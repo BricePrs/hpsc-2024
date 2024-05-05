@@ -3,30 +3,15 @@
 #include <cmath>
 #include <mpi.h>
 #include <cstring>
+#include <chrono>
 
 struct Body {
 	double x, y, m, fx, fy;
 };
 
-int main(int argc, char** argv) {
 
-
-	const int N = 20;
-	MPI_Init(&argc, &argv);
-	int size, rank;
-	MPI_Comm_size(MPI_COMM_WORLD, &size);
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-	printf("The size is %i\n", size);
+void ParallelSolution(Body *ibody, Body *jbody, int size, int N, int rank) {
 	MPI_Win win;
-	Body ibody[N/size], jbody[N/size], temp[N/size];
-	srand48(rank);
-	for(int i=0; i<N/size; i++) {
-		ibody[i].x = jbody[i].x = drand48();
-		ibody[i].y = jbody[i].y = drand48();
-		ibody[i].m = jbody[i].m = drand48();
-		ibody[i].fx = jbody[i].fx = ibody[i].fy = jbody[i].fy = 0;
-	}
-
 	MPI_Win_create(
 			jbody,
 			N/size*sizeof(Body),
@@ -36,14 +21,11 @@ int main(int argc, char** argv) {
 			&win
 	);
 
-	int recv_from = (rank + 1) % size;
 	int send_to = (rank - 1 + size) % size;
 	MPI_Datatype MPI_BODY;
 	MPI_Type_contiguous(5, MPI_DOUBLE, &MPI_BODY);
 	MPI_Type_commit(&MPI_BODY);
 	for(int irank=0; irank<size; irank++) {
-//		MPI_Send(jbody, N/size, MPI_BODY, send_to, 0, MPI_COMM_WORLD);
-//		MPI_Recv(jbody, N/size, MPI_BODY, recv_from, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 		MPI_Win_fence(0, win);
 		MPI_Put(
 				jbody,
@@ -58,7 +40,7 @@ int main(int argc, char** argv) {
 		MPI_Win_fence(0, win);
 
 
-	for(int i=0; i<N/size; i++) {
+		for(int i=0; i<N/size; i++) {
 			for(int j=0; j<N/size; j++) {
 				double rx = ibody[i].x - jbody[j].x;
 				double ry = ibody[i].y - jbody[j].y;
@@ -78,5 +60,76 @@ int main(int argc, char** argv) {
 			}
 		}
 	}
+}
+
+void DefaultSolution(Body *ibody, Body *jbody, int size, int N, int rank) {
+	int recv_from = (rank + 1) % size;
+	int send_to = (rank - 1 + size) % size;
+	MPI_Datatype MPI_BODY;
+	MPI_Type_contiguous(5, MPI_DOUBLE, &MPI_BODY);
+	MPI_Type_commit(&MPI_BODY);
+	for(int irank=0; irank<size; irank++) {
+		MPI_Send(jbody, N/size, MPI_BODY, send_to, 0, MPI_COMM_WORLD);
+		MPI_Recv(jbody, N/size, MPI_BODY, recv_from, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		for(int i=0; i<N/size; i++) {
+			for(int j=0; j<N/size; j++) {
+				double rx = ibody[i].x - jbody[j].x;
+				double ry = ibody[i].y - jbody[j].y;
+				double r = std::sqrt(rx * rx + ry * ry);
+				if (r > 1e-15) {
+					ibody[i].fx -= rx * jbody[j].m / (r * r * r);
+					ibody[i].fy -= ry * jbody[j].m / (r * r * r);
+				}
+			}
+		}
+	}
+	for(int irank=0; irank<size; irank++) {
+		MPI_Barrier(MPI_COMM_WORLD);
+		if(irank==rank) {
+			for(int i=0; i<N/size; i++) {
+				printf("%d %g %g\n",i+rank*N/size,ibody[i].fx,ibody[i].fy);
+			}
+		}
+	}
+}
+
+#define DEFAULT
+
+int main(int argc, char** argv) {
+
+	const int N = 20;
+	MPI_Init(&argc, &argv);
+	int size, rank;
+	MPI_Comm_size(MPI_COMM_WORLD, &size);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	printf("The size is %i\n", size);
+	Body ibody[N/size], jbody[N/size];
+	srand48(rank);
+	for(int i=0; i<N/size; i++) {
+		ibody[i].x = jbody[i].x = drand48();
+		ibody[i].y = jbody[i].y = drand48();
+		ibody[i].m = jbody[i].m = drand48();
+		ibody[i].fx = jbody[i].fx = ibody[i].fy = jbody[i].fy = 0;
+	}
+
+	if(rank == 0) {
+		printf("Without Window:\n");
+	}
+
+	DefaultSolution(ibody, jbody, size, N, rank);
+
+	MPI_Barrier(MPI_COMM_WORLD);
+	if(rank == 0) {
+		printf("With Window:\n");
+	}
+
+	srand48(rank);
+	for(int i=0; i<N/size; i++) {
+		ibody[i].x = jbody[i].x = drand48();
+		ibody[i].y = jbody[i].y = drand48();
+		ibody[i].m = jbody[i].m = drand48();
+		ibody[i].fx = jbody[i].fx = ibody[i].fy = jbody[i].fy = 0;
+	}
+	ParallelSolution(ibody, jbody, size, N, rank);
 	MPI_Finalize();
 }

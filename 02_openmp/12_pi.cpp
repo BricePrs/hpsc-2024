@@ -69,7 +69,7 @@ int main() {
 	for (int i = 5; i < 12; i++) {
 		int t = 1 << i;
 		auto duration = MesureTimeFor(n, t);
-		printf("%.2f Elapsed time for n=10^%i and t=%i: %fs parallel_portion:%f\n ", std::get<0>(duration)/defaultTimeSolution, exp, t, std::get<0>(duration), std::get<1>(duration)/std::get<0>(duration));
+		printf("%.2f times faster. Elapsed time for n=10^%i and t=%i: %fs parallel_portion:%f\n ", defaultTimeSolution/std::get<0>(duration), exp, t, std::get<0>(duration), std::get<1>(duration)/std::get<0>(duration));
 	}
 
 
