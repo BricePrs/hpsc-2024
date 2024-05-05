@@ -4,7 +4,7 @@
 #include <x86intrin.h>
 #include <chrono>
 
-void SimdSolution(float *x, float *y, float *fx, float *fy, float *m) {
+void SimdSolution(float *x, float *y, float *fx, float *fy, float *m, int N) {
 	__m512 fx_vec = _mm512_load_ps(fx);
 	__m512 fy_vec = _mm512_load_ps(fy);
 	__m512 m_vec = _mm512_load_ps(m);
@@ -47,7 +47,7 @@ void SimdSolution(float *x, float *y, float *fx, float *fy, float *m) {
 	}
 }
 
-void DefaultSolution(float *x, float *y, float *fx, float *fy, float *m) {
+void DefaultSolution(float *x, float *y, float *fx, float *fy, float *m, int N) {
 	for(int i=0; i<N; i++) {
 		for(int j=0; j<N; j++) {
 			if(i != j) {
@@ -76,7 +76,7 @@ int main() {
 
 
 	auto start = std::chrono::high_resolution_clock::now();
-	DafaultSolution(x, y, fx, fy, m);
+	DefaultSolution(x, y, fx, fy, m, N);
 	auto end = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<double> elapsed = end-start;
 
@@ -88,7 +88,7 @@ int main() {
 		fx[i] = fy[i] = 0;
 	}
 	auto par_start = std::chrono::high_resolution_clock::now();
-	SimdSolution(x, y, fx, fy, m);
+	SimdSolution(x, y, fx, fy, m, N);
 	auto par_end = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<double> par_elapsed = par_end-par_start;
 
