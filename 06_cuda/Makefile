@@ -28,3 +28,5 @@
 	g++ 13_bucket_sort.cpp
 13_bucket_sort_cu: 13_bucket_sort_cu.cu
 	nvcc 13_bucket_sort_cu.cu -lmpi
+navier-stokes: navier-stokes.cu
+	nvcc navier-stokes.cu

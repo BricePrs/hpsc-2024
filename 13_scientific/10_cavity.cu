@@ -46,12 +46,12 @@ __global__ void velocity_update(float* u, float* v, float* un, float* vn, float*
   int i = blockIdx.x * blockDim.x + threadIdx.x;
   if (j > 0 && j < ny - 1 && i > 0 && i < nx - 1) {
     u[j * nx + i] = un[j * nx + i] - un[j * nx + i] * dt / dx * (un[j * nx + i] - un[j * nx + (i - 1)]) -
-                    un[j * nx + i] * dt / dy * (un[j * nx + i] - un[(j - 1) * nx + i]) -
+                    vn[j * nx + i] * dt / dy * (un[j * nx + i] - un[(j - 1) * nx + i]) -
                     dt / (2.0f * rho * dx) * (p[j * nx + (i + 1)] - p[j * nx + (i - 1)]) +
                     nu * dt / (dx * dx) * (un[j * nx + (i + 1)] - 2.0f * un[j * nx + i] + un[j * nx + (i - 1)]) +
                     nu * dt / (dy * dy) * (un[(j + 1) * nx + i] - 2.0f * un[j * nx + i] + un[(j - 1) * nx + i]);
 
-    v[j * nx + i] = vn[j * nx + i] - vn[j * nx + i] * dt / dx * (vn[j * nx + i] - vn[j * nx + (i - 1)]) -
+    v[j * nx + i] = vn[j * nx + i] - un[j * nx + i] * dt / dx * (vn[j * nx + i] - vn[j * nx + (i - 1)]) -
                     vn[j * nx + i] * dt / dy * (vn[j * nx + i] - vn[(j - 1) * nx + i]) -
                     dt / (2.0f * rho * dx) * (p[(j + 1) * nx + i] - p[(j - 1) * nx + i]) +
                     nu * dt / (dx * dx) * (vn[j * nx + (i + 1)] - 2.0f * vn[j * nx + i] + vn[j * nx + (i - 1)]) +
@@ -117,18 +117,17 @@ __global__ void apply_boundary_conditions_p(float* p, int nx, int ny) {
   }
 }
 
-void save_to_file(const std::string& filename, const std::vector<float>& data, int nx, int ny) {
-  std::ofstream file(filename, std::ios::app);
+void save_to_file(std::ofstream& file, const std::vector<float>& data, int nx, int ny) {
   for (int j = 0; j < ny; ++j) {
     for (int i = 0; i < nx; ++i) {
       file << data[j * nx + i] << " ";
     }
   }
   file << "\n";
-  file.close();
 }
 
 int main() {
+
   int N = ny * nx;
   std::vector<float> h_u(N, 0.0f);
   std::vector<float> h_v(N, 0.0f);
@@ -142,11 +141,15 @@ int main() {
   float* d_vn; cudaMalloc(&d_vn, N*sizeof(float));
   float* d_pn; cudaMalloc(&d_pn, N*sizeof(float));
 
+  std::ofstream u_file("u.dat", std::ios::out | std::ios::trunc);
+  std::ofstream v_file("v.dat", std::ios::out | std::ios::trunc);
+  std::ofstream p_file("p.dat", std::ios::out | std::ios::trunc);
+
   dim3 threadsPerBlock(16, 16);
   dim3 numBlocks((nx + threadsPerBlock.x - 1) / threadsPerBlock.x, (ny + threadsPerBlock.y - 1) / threadsPerBlock.y);
 
   for (int n = 0; n < nt; n++) {
-    // std::cout << "Starting to compute n = " << n << std::endl;
+
     build_up_b<<<numBlocks, threadsPerBlock>>>(d_b, d_u, d_v, nx, ny, rho, dt, dx, dy);
     cudaDeviceSynchronize();
     for (int it = 0; it < nit; it++) {
@@ -174,9 +177,9 @@ int main() {
 
     cudaDeviceSynchronize();
 
-    save_to_file("u.dat", h_u, nx, ny);
-    save_to_file("v.dat", h_v, nx, ny);
-    save_to_file("p.dat", h_p, nx, ny);
+    save_to_file(u_file, h_u, nx, ny);
+    save_to_file(v_file, h_v, nx, ny);
+    save_to_file(p_file, h_p, nx, ny);
 
   }
 
@@ -188,7 +191,9 @@ int main() {
   cudaFree(d_vn);
   cudaFree(d_pn);
 
-  // Optionally, print or visualize the results here
+	u_file.close();
+	v_file.close();
+	p_file.close();
 
   return 0;
 }
