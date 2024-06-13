@@ -2,6 +2,14 @@
 
 学籍番号：24R51521
 
+The final report code is in the 13_scientific directory.
+You can use the commands :
+  - make cpp_cavity
+  - make cuda_cavity
+  - make py_cavity
+  - make plot
+  - make clean
+
 |          | Topic                                | Sample code               |
 | -------- | ------------------------------------ | ------------------------- |
 | Class 1  | Introduction to parallel programming | 01_introduction           |
